@@ -44,11 +44,12 @@ def graphql_server():
 
 mutation = MutationType()
 mutation.set_field('update_movie_rate', r.update_movie_rate)
-
-
+mutation.set_field('delete_movie_by_id', r.delete_movie_by_id)
 mutation.set_field('create_movie', r.create_movie)
+
 actor = ObjectType('Actor')
 movie.set_field('actors', r.resolve_actors_in_movie)
+
 schema = make_executable_schema(type_defs, movie, query, mutation,  actor)
 
 
