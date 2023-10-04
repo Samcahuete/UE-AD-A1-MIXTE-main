@@ -1,6 +1,7 @@
 from ariadne import graphql_sync, make_executable_schema, load_schema_from_path, ObjectType, QueryType, MutationType
 from ariadne.constants import PLAYGROUND_HTML
 from flask import Flask, request, jsonify, make_response
+from graphql import GraphQLObjectType, GraphQLInputObjectType
 
 import resolvers as r
 
@@ -27,6 +28,7 @@ type_defs = load_schema_from_path('movie.graphql')
 query = QueryType()
 movie = ObjectType('Movie')
 query.set_field('movie_with_id', r.movie_with_id)
+query.set_field('all_movies', r.all_movies)
 schema = make_executable_schema(type_defs, movie, query)
 @app.route('/graphql', methods=['POST'])
 def graphql_server():
@@ -42,11 +44,13 @@ def graphql_server():
 
 mutation = MutationType()
 mutation.set_field('update_movie_rate', r.update_movie_rate)
-schema = make_executable_schema(type_defs, movie, query, mutation)
 
+
+mutation.set_field('create_movie', r.create_movie)
 actor = ObjectType('Actor')
 movie.set_field('actors', r.resolve_actors_in_movie)
-schema = make_executable_schema(type_defs, movie, query, mutation, actor)
+schema = make_executable_schema(type_defs, movie, query, mutation,  actor)
+
 
 if __name__ == "__main__":
     print("Server running in port %s"%(PORT))
