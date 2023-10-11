@@ -41,6 +41,21 @@ def create_movie(_, info, _movie):
         json.dump(new_movies, wfile)
     return _movie
 
+def delete_movie_by_id(_, info, _id):
+    new_movies = {}
+    with open('{}/data/movies.json'.format("."), "r") as file:
+        movies = json.load(file)["movies"]
+    new_movies["movies"] = movies
+    for movie in movies:
+        if str(movie["id"]) == _id:
+            print("movie found")
+            new_movies["movies"].remove(movie)
+            with open('{}/data/movies.json'.format("."), "w") as wfile:
+                json.dump(new_movies, wfile)
+            print("movie deleted")
+            return movie
+    print("movie not found")
+    return None
 def resolve_actors_in_movie(movie, info):
     with open('{}/data/actors.json'.format("."), "r") as file:
         data = json.load(file)
