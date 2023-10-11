@@ -3,6 +3,28 @@ import requests
 import json
 from werkzeug.exceptions import NotFound
 
+# CALLING gRPC requests
+import grpc
+from concurrent import futures
+import booking_pb2
+import booking_pb2_grpc
+
+# CALLING GraphQL requests
+
+def get_bookings_by_userid(stub, userid):
+   bookings = stub.GetBookingsByUserId(userid)
+   print(userid)
+   for booking in bookings :
+      print(booking)
+
+def run():
+   with grpc.insecure_channel('localhost:3002') as channel:
+      stub = booking_pb2_grpc.BookingStub(channel)
+
+      print("-------------- GetBookingsByUserId --------------")
+      userid = booking_pb2.UserId(userid="dwight_schrute")
+      get_bookings_by_userid(stub, userid)
+
 app = Flask(__name__)
 
 PORT = 3203
@@ -29,7 +51,7 @@ def get_user_by_id(userid):
     return make_response(jsonify({"error":"bad input parameter"}),400)
 
 @app.route("/users/bookings/<userid>", methods=['GET', 'POST'])
-def get_bookings_by_userid(userid):
+def get_bookings_by_userid_REST(userid):
     bookings = requests.get('http://172.16.132.100:3201/bookings').json()
     for booking in bookings:
         if str(booking["userid"]) == str(userid):
@@ -60,5 +82,7 @@ def get_movies_by_userid(userid):
     return make_response(jsonify({"error": "no booking found for user" + userid}), 400)
 
 if __name__ == "__main__":
+   run()
    print("Server running in port %s"%(PORT))
    app.run(host=HOST, port=PORT)
+
