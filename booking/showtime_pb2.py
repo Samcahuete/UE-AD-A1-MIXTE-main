@@ -4,9 +4,8 @@
 """Generated protocol buffer code."""
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
-from google.protobuf import message as _message
-from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf.internal import builder as _builder
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -14,34 +13,20 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eshowtime.proto\",\n\x0cScheduleData\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\t\x12\x0e\n\x06movies\x18\x02 \x03(\t\"\x14\n\x04\x44\x61te\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\t27\n\x08Showtime\x12+\n\x11GetScheduleByDate\x12\x05.Date\x1a\r.ScheduleData\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0eshowtime.proto\",\n\x0cScheduleData\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\t\x12\x0e\n\x06movies\x18\x02 \x03(\t\"\x14\n\x04\x44\x61te\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\t\"\x0b\n\tEmptyDate2i\n\x08Showtime\x12+\n\x11GetScheduleByDate\x12\x05.Date\x1a\r.ScheduleData\"\x00\x12\x30\n\x0fGetAllSchedules\x12\n.EmptyDate\x1a\r.ScheduleData\"\x00\x30\x01\x62\x06proto3')
 
-
-
-_SCHEDULEDATA = DESCRIPTOR.message_types_by_name['ScheduleData']
-_DATE = DESCRIPTOR.message_types_by_name['Date']
-ScheduleData = _reflection.GeneratedProtocolMessageType('ScheduleData', (_message.Message,), {
-  'DESCRIPTOR' : _SCHEDULEDATA,
-  '__module__' : 'showtime_pb2'
-  # @@protoc_insertion_point(class_scope:ScheduleData)
-  })
-_sym_db.RegisterMessage(ScheduleData)
-
-Date = _reflection.GeneratedProtocolMessageType('Date', (_message.Message,), {
-  'DESCRIPTOR' : _DATE,
-  '__module__' : 'showtime_pb2'
-  # @@protoc_insertion_point(class_scope:Date)
-  })
-_sym_db.RegisterMessage(Date)
-
-_SHOWTIME = DESCRIPTOR.services_by_name['Showtime']
+_globals = globals()
+_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'showtime_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _SCHEDULEDATA._serialized_start=18
-  _SCHEDULEDATA._serialized_end=62
-  _DATE._serialized_start=64
-  _DATE._serialized_end=84
-  _SHOWTIME._serialized_start=86
-  _SHOWTIME._serialized_end=141
+  _globals['_SCHEDULEDATA']._serialized_start=18
+  _globals['_SCHEDULEDATA']._serialized_end=62
+  _globals['_DATE']._serialized_start=64
+  _globals['_DATE']._serialized_end=84
+  _globals['_EMPTYDATE']._serialized_start=86
+  _globals['_EMPTYDATE']._serialized_end=97
+  _globals['_SHOWTIME']._serialized_start=99
+  _globals['_SHOWTIME']._serialized_end=204
 # @@protoc_insertion_point(module_scope)

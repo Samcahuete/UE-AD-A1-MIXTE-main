@@ -2,6 +2,9 @@ syntax = "proto3" ;
 
 service Booking {
     rpc GetBookingsByUserId(UserId) returns (stream BookingData) {}
+    rpc checkBookingValidity(MovieSchedule) returns (Validity) {}
+    rpc addBooking(MovieScheduleWithUserId) returns (MovieScheduleWithUserId) {}
+    rpc deleteBooking(MovieSchedule) returns (MovieSchedule) {}
 }
 
 message UserId {
@@ -11,4 +14,18 @@ message UserId {
 message BookingData {
     string date = 1;
     repeated string movies = 2;
+}
+
+message Validity {
+    bool validity = 1;
+}
+
+message MovieScheduleWithUserId {
+    UserId userid = 1;
+    MovieSchedule movieSchedule = 2;
+}
+
+message MovieSchedule {
+    string date = 1;
+    string movieid = 2;
 }

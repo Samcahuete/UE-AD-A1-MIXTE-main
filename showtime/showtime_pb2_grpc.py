@@ -19,6 +19,11 @@ class ShowtimeStub(object):
                 request_serializer=showtime__pb2.Date.SerializeToString,
                 response_deserializer=showtime__pb2.ScheduleData.FromString,
                 )
+        self.GetAllSchedules = channel.unary_stream(
+                '/Showtime/GetAllSchedules',
+                request_serializer=showtime__pb2.EmptyDate.SerializeToString,
+                response_deserializer=showtime__pb2.ScheduleData.FromString,
+                )
 
 
 class ShowtimeServicer(object):
@@ -30,12 +35,23 @@ class ShowtimeServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetAllSchedules(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ShowtimeServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetScheduleByDate': grpc.unary_unary_rpc_method_handler(
                     servicer.GetScheduleByDate,
                     request_deserializer=showtime__pb2.Date.FromString,
+                    response_serializer=showtime__pb2.ScheduleData.SerializeToString,
+            ),
+            'GetAllSchedules': grpc.unary_stream_rpc_method_handler(
+                    servicer.GetAllSchedules,
+                    request_deserializer=showtime__pb2.EmptyDate.FromString,
                     response_serializer=showtime__pb2.ScheduleData.SerializeToString,
             ),
     }
@@ -61,6 +77,23 @@ class Showtime(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Showtime/GetScheduleByDate',
             showtime__pb2.Date.SerializeToString,
+            showtime__pb2.ScheduleData.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def GetAllSchedules(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/Showtime/GetAllSchedules',
+            showtime__pb2.EmptyDate.SerializeToString,
             showtime__pb2.ScheduleData.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
