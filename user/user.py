@@ -64,7 +64,7 @@ def get_user_by_id(userid):
             return res
     return make_response(jsonify({"error":"bad input parameter"}),400)
 
-def get_bookings_by_userid(userid):
+def get_bookings_by_userid_REST(userid):
     bookings = requests.get('http://localhost:3201/bookings/'+userid).json()
     res = make_response(jsonify(bookings["dates"]),200)
     return res
