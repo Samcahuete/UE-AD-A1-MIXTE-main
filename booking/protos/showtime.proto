@@ -2,6 +2,7 @@ syntax = "proto3";
 
 service Showtime {
     rpc GetScheduleByDate(Date) returns (ScheduleData) {}
+    rpc GetAllSchedules(EmptyDate) returns (stream ScheduleData) {}
 }
 
 message ScheduleData {
@@ -13,3 +14,4 @@ message Date {
     string date = 1;
 }
 
+message EmptyDate {}

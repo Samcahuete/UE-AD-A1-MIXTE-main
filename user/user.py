@@ -17,13 +17,27 @@ def get_bookings_by_userid(stub, userid):
    for booking in bookings :
       print(booking)
 
+def add_bookingData_by_userid(stub, movieSchedule_with_userid):
+    print("c'est super")
+    print(stub.addBooking(movieSchedule_with_userid))
+
+
 def run():
-   with grpc.insecure_channel('localhost:3002') as channel:
+   with grpc.insecure_channel('localhost:3001') as channel:
       stub = booking_pb2_grpc.BookingStub(channel)
 
       print("-------------- GetBookingsByUserId --------------")
       userid = booking_pb2.UserId(userid="dwight_schrute")
       get_bookings_by_userid(stub, userid)
+      ##remplacer date par 20151202 pour vérifier la fonctionnalité de validité des schedules
+      mock_movieSchedule = booking_pb2.MovieSchedule(date = "20151202", movieid = "276c79ec-a26a-40a6-b3d3-fb242a5947b6")
+      print("mock_movieSchedule ", mock_movieSchedule)
+      mock_userid = booking_pb2.UserId(userid="helene_coullon")
+      mock_movieSchedule_with_userid = booking_pb2.MovieScheduleWithUserId(userid = mock_userid, movieSchedule = mock_movieSchedule)
+      print("mock_movieSchedule_with_userid ", mock_movieSchedule_with_userid)
+      add_bookingData_by_userid(stub, mock_movieSchedule_with_userid)
+
+      channel.close()
 
 app = Flask(__name__)
 
@@ -50,7 +64,7 @@ def get_user_by_id(userid):
             return res
     return make_response(jsonify({"error":"bad input parameter"}),400)
 
-def get_bookings_by_userid(userid):
+def get_bookings_by_userid_REST(userid):
     bookings = requests.get('http://localhost:3201/bookings/'+userid).json()
     res = make_response(jsonify(bookings["dates"]),200)
     return res
