@@ -26,6 +26,8 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
                 print("User found !")
                 for date in booking["dates"] :
                     yield booking_pb2.BookingData(date=date["date"], movies=date["movies"])
+        print("user booking not found")
+        yield None
 
     def checkBookingValidity(self, request, context):
         print("request", request)

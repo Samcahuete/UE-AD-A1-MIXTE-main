@@ -14,8 +14,7 @@ import booking_pb2_grpc
 def get_bookings_by_userid(stub, userid):
    bookings = stub.GetBookingsByUserId(userid)
    print(userid)
-   for booking in bookings :
-      print(booking)
+   return bookings
 
 def add_bookingData_by_userid(stub, movieSchedule_with_userid):
     print("c'est super")
@@ -28,7 +27,7 @@ def run():
 
       print("-------------- GetBookingsByUserId --------------")
       userid = booking_pb2.UserId(userid="dwight_schrute")
-      get_bookings_by_userid(stub, userid)
+      print("get_bookings_by_userid",get_bookings_by_userid(stub, userid))
       ##remplacer date par 20151202 pour vérifier la fonctionnalité de validité des schedules
       mock_movieSchedule = booking_pb2.MovieSchedule(date = "20151202", movieid = "276c79ec-a26a-40a6-b3d3-fb242a5947b6")
       print("mock_movieSchedule ", mock_movieSchedule)
@@ -71,15 +70,43 @@ def get_bookings_by_userid_REST(userid):
 
 @app.route("/users/movies/<userid>", methods=['GET'])
 def get_movies_by_userid(userid):
-    user_bookings_request = requests.get('http://localhost:3203/users/bookings/'+userid)
-    user_bookings = user_bookings_request.json()
-    if user_bookings_request.status_code == 200:
+    with grpc.insecure_channel('localhost:3001') as channel:
+        stub = booking_pb2_grpc.BookingStub(channel)
+        requested_userid = booking_pb2.UserId(userid=userid)
+        user_bookings_stream = get_bookings_by_userid(stub, requested_userid)
+        print("user_bookings_stream", user_bookings_stream)
+        user_bookings = []
+        for booking in user_bookings_stream:
+            user_bookings.append(booking)
+        print("user_bookings", user_bookings)
+        channel.close()
+    print("user_bookings", user_bookings)
+    if user_bookings is not None:
         moviesInfo = {
             "movies":[]
         }
         for booking in user_bookings:
-            for movieid in booking["movies"]:
-                movie_request = requests.get('http://localhost:3200/movies/'+movieid)
+            for movieid in booking.movies:
+                headers = {
+                    'Content-Type': 'application/json',
+                }
+                query_content = """
+{
+  movie_with_id(_id: %s) {
+    id
+    title
+    rating
+    director
+    actors {
+      firstname
+      lastname
+      birthyear
+    }
+  }
+}
+""" % ('"' + movieid + '"')
+                query = {'query': query_content}
+                movie_request = requests.post('http://localhost:3003/graphql', json=query)
                 movie = movie_request.json()
                 if movie_request.status_code ==200:
                     moviesInfo["movies"].append(movie)
