@@ -31,8 +31,8 @@ class BookingStub(object):
                 )
         self.deleteBooking = channel.unary_unary(
                 '/Booking/deleteBooking',
-                request_serializer=booking__pb2.MovieSchedule.SerializeToString,
-                response_deserializer=booking__pb2.MovieSchedule.FromString,
+                request_serializer=booking__pb2.MovieScheduleWithUserId.SerializeToString,
+                response_deserializer=booking__pb2.MovieScheduleWithUserId.FromString,
                 )
 
 
@@ -83,8 +83,8 @@ def add_BookingServicer_to_server(servicer, server):
             ),
             'deleteBooking': grpc.unary_unary_rpc_method_handler(
                     servicer.deleteBooking,
-                    request_deserializer=booking__pb2.MovieSchedule.FromString,
-                    response_serializer=booking__pb2.MovieSchedule.SerializeToString,
+                    request_deserializer=booking__pb2.MovieScheduleWithUserId.FromString,
+                    response_serializer=booking__pb2.MovieScheduleWithUserId.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -159,7 +159,7 @@ class Booking(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/Booking/deleteBooking',
-            booking__pb2.MovieSchedule.SerializeToString,
-            booking__pb2.MovieSchedule.FromString,
+            booking__pb2.MovieScheduleWithUserId.SerializeToString,
+            booking__pb2.MovieScheduleWithUserId.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

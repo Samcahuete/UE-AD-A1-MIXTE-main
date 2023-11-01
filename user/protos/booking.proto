@@ -4,7 +4,7 @@ service Booking {
     rpc GetBookingsByUserId(UserId) returns (stream BookingData) {}
     rpc checkBookingValidity(MovieSchedule) returns (Validity) {}
     rpc addBooking(MovieScheduleWithUserId) returns (MovieScheduleWithUserId) {}
-    rpc deleteBooking(MovieSchedule) returns (MovieSchedule) {}
+    rpc deleteBooking(MovieScheduleWithUserId) returns (MovieScheduleWithUserId) {}
 }
 
 message UserId {
