@@ -5,16 +5,17 @@ from graphql import GraphQLObjectType, GraphQLInputObjectType
 
 import resolvers as r
 
-PORT = 3001
+PORT = 3003
 HOST = '0.0.0.0'
 app = Flask(__name__)
-
-# todo create elements for Ariadne
 
 
 # root message
 @app.route("/", methods=['GET'])
 def home():
+    """
+    Home page
+    """
     return make_response("<h1 style='color:blue'>Welcome to the Movie service!</h1>",200)
 
 #####
@@ -22,14 +23,11 @@ def home():
 
 @app.route('/graphql', methods=['GET'])
 def playground():
+    """
+    Playground
+    """
     return PLAYGROUND_HTML, 200
 
-type_defs = load_schema_from_path('movie.graphql')
-query = QueryType()
-movie = ObjectType('Movie')
-query.set_field('movie_with_id', r.movie_with_id)
-query.set_field('all_movies', r.all_movies)
-schema = make_executable_schema(type_defs, movie, query)
 @app.route('/graphql', methods=['POST'])
 def graphql_server():
     data = request.get_json()
@@ -42,11 +40,19 @@ def graphql_server():
     status_code = 200 if success else 400
     return jsonify(result), status_code
 
+# loads schema from the graphql file
+type_defs = load_schema_from_path('movie.graphql')
+# Uses the loaded schema to create the query structure and link it to the resolvers
+query = QueryType()
+movie = ObjectType('Movie')
+query.set_field('movie_with_id', r.movie_with_id)
+query.set_field('all_movies', r.all_movies)
+# creates the mutation structure
 mutation = MutationType()
 mutation.set_field('update_movie_rate', r.update_movie_rate)
 mutation.set_field('delete_movie_by_id', r.delete_movie_by_id)
 mutation.set_field('create_movie', r.create_movie)
-
+# Load the Actor type and links its resolver
 actor = ObjectType('Actor')
 movie.set_field('actors', r.resolve_actors_in_movie)
 

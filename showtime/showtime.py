@@ -11,16 +11,32 @@ class ShowtimeServicer(showtime_pb2_grpc.ShowtimeServicer):
             self.db = json.load(jsf)["schedule"]
 
     def GetScheduleByDate(self, request, context):
+        """
+        Retrieves schedules thanks to the requested date
+        :param request: {Date}
+        :param context:
+        :return: {ScheduleData}
+        """
+        # Goes through all the schedules
         for schedule in self.db:
-            if schedule['date'] == request.date :
+            # Verifies if it matches the requested date
+            if schedule['date'] == request.date:
                 print("Schedule found!")
                 return showtime_pb2.ScheduleData(date=schedule['date'], movies=schedule['movies'])
-        return showtime_pb2.ScheduleData(date="", movies=[""])
+        print("Schedule not found")
+        # returns an empty ScheduleDate
+        return showtime_pb2.ScheduleData(date="", movies=[])
 
     def GetAllSchedules(self, request, context):
+        """
+        Retrieves all schedules
+        :param request: {EmptyDate}
+        :param context:
+        :yield: ScheduleDate
+        """
+        # Goes through all the bookings
         for schedule in self.db:
-            print("ah ouai")
-            print("yield",showtime_pb2.ScheduleData(date=schedule['date'], movies=schedule['movies']))
+            # yields schedule
             yield showtime_pb2.ScheduleData(date=schedule['date'], movies=schedule['movies'])
 
 def serve():

@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rbooking.proto\"\x18\n\x06UserId\x12\x0e\n\x06userid\x18\x01 \x01(\t\"+\n\x0b\x42ookingData\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\t\x12\x0e\n\x06movies\x18\x02 \x03(\t\"\x1c\n\x08Validity\x12\x10\n\x08validity\x18\x01 \x01(\x08\"Y\n\x17MovieScheduleWithUserId\x12\x17\n\x06userid\x18\x01 \x01(\x0b\x32\x07.UserId\x12%\n\rmovieSchedule\x18\x02 \x01(\x0b\x32\x0e.MovieSchedule\".\n\rMovieSchedule\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\t\x12\x0f\n\x07movieid\x18\x02 \x01(\t2\xe7\x01\n\x07\x42ooking\x12\x30\n\x13GetBookingsByUserId\x12\x07.UserId\x1a\x0c.BookingData\"\x00\x30\x01\x12\x33\n\x14\x63heckBookingValidity\x12\x0e.MovieSchedule\x1a\t.Validity\"\x00\x12\x42\n\naddBooking\x12\x18.MovieScheduleWithUserId\x1a\x18.MovieScheduleWithUserId\"\x00\x12\x31\n\rdeleteBooking\x12\x0e.MovieSchedule\x1a\x0e.MovieSchedule\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rbooking.proto\"\x18\n\x06UserId\x12\x0e\n\x06userid\x18\x01 \x01(\t\"+\n\x0b\x42ookingData\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\t\x12\x0e\n\x06movies\x18\x02 \x03(\t\"\x1c\n\x08Validity\x12\x10\n\x08validity\x18\x01 \x01(\x08\"Y\n\x17MovieScheduleWithUserId\x12\x17\n\x06userid\x18\x01 \x01(\x0b\x32\x07.UserId\x12%\n\rmovieSchedule\x18\x02 \x01(\x0b\x32\x0e.MovieSchedule\".\n\rMovieSchedule\x12\x0c\n\x04\x64\x61te\x18\x01 \x01(\t\x12\x0f\n\x07movieid\x18\x02 \x01(\t2\xfb\x01\n\x07\x42ooking\x12\x30\n\x13GetBookingsByUserId\x12\x07.UserId\x1a\x0c.BookingData\"\x00\x30\x01\x12\x33\n\x14\x63heckBookingValidity\x12\x0e.MovieSchedule\x1a\t.Validity\"\x00\x12\x42\n\naddBooking\x12\x18.MovieScheduleWithUserId\x1a\x18.MovieScheduleWithUserId\"\x00\x12\x45\n\rdeleteBooking\x12\x18.MovieScheduleWithUserId\x1a\x18.MovieScheduleWithUserId\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,5 +32,5 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_MOVIESCHEDULE']._serialized_start=209
   _globals['_MOVIESCHEDULE']._serialized_end=255
   _globals['_BOOKING']._serialized_start=258
-  _globals['_BOOKING']._serialized_end=489
+  _globals['_BOOKING']._serialized_end=509
 # @@protoc_insertion_point(module_scope)
