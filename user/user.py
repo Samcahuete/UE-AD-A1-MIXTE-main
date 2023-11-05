@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, make_response
+from flask import Flask, request, jsonify, make_response
 import requests
 import json
 
@@ -15,6 +15,20 @@ HOST = '0.0.0.0'
 """ We load the database """
 with open('{}/data/users.json'.format("."), "r") as jsf:
     users = json.load(jsf)["users"]
+
+
+def update_db(users_db):
+    """
+        Returns the users database updated
+        param : the database to update
+        return : the database on a json format
+    """
+    with open('{}/data/users.json'.format("."), "w") as wfile:
+        formatted_users = {
+            "users": users_db
+        }
+        json.dump(formatted_users, wfile)
+    return users_db
 
 
 def get_bookings_by_userid(stub, userid):
@@ -48,51 +62,6 @@ def delete_bookingData_by_userid(stub, movieSchedule_with_userid):
     return stub.deleteBooking(movieSchedule_with_userid)
 
 
-def run():
-    """
-    Function used to test the booking service implemented with grpc
-    It is called at the very beginning of the file execution
-    """
-    # We open a channel connected to the booking service
-    with grpc.insecure_channel('localhost:3001') as channel:
-        stub = booking_pb2_grpc.BookingStub(channel)
-
-        print("-------------- checkBookingValidity --------------")
-        mock_movieSchedule = booking_pb2.MovieSchedule(date="20151202", movieid="276c79ec-a26a-40a6-b3d3-fb242a5947b6")
-        print("The schedule should be valid: ", stub.checkBookingValidity(mock_movieSchedule))
-        random_movieSchedule = booking_pb2.MovieSchedule(date="7787", movieid="276c79ec-a26a-40a6-b3d3-random movie")
-        print("The schedule should not be valid: ", stub.checkBookingValidity(random_movieSchedule))
-
-        print("-------------- GetBookingsByUserId --------------")
-        userid = booking_pb2.UserId(userid="dwight_schrute")
-        print("Bookings of user dwight_schrute: ", get_bookings_by_userid(stub, userid))
-        bookings_stream = get_bookings_by_userid(stub, userid)
-        for booking in bookings_stream:
-            print("booking", booking)
-        random_userid = booking_pb2.UserId(userid="random_user")
-        print("Bookings of user random_user: ", get_bookings_by_userid(stub, random_userid))
-        bookings_stream = get_bookings_by_userid(stub, random_userid)
-        for booking in bookings_stream:
-            print("booking", booking)
-
-        print("-------------- AddBooking --------------")
-        mock_userid = booking_pb2.UserId(userid="obiwan_kenobi")
-        mock_movieSchedule_with_userid = booking_pb2.MovieScheduleWithUserId(userid=mock_userid,
-                                                                             movieSchedule=mock_movieSchedule)
-        print("It should add the booking to the database")
-        print(add_bookingData_by_userid(stub, mock_movieSchedule_with_userid))
-        print("Bookings for user obiwan_kenobi: ", get_bookings_by_userid(stub, mock_userid))
-        print("It shouldn't be able to add again the same schedule")
-        add_bookingData_by_userid(stub, mock_movieSchedule_with_userid)
-
-        print("-------------- deleteBooking --------------")
-        print("It should delete the previous added booking")
-        delete_bookingData_by_userid(stub, mock_movieSchedule_with_userid)
-
-        # channel closed
-        channel.close()
-
-
 @app.route("/", methods=['GET'])
 def home():
     """
@@ -124,7 +93,45 @@ def get_user_by_id(userid):
             return res
     return make_response(jsonify({"error": "bad input parameter"}), 400)
 
+@app.route("/users/<userid>", methods=['POST'])
+def add_user(userid):
+    """
+        Add a user to the database if it doesn't already exist
+        param : a string userid
+    """
+    user_req = request.get_json()
+    if user_req["id"] != userid:
+        res = make_response(jsonify({"error": f"the userid specified in the url ({userid}) "
+                                              f"doesn't match with the one given in the body ({user_req['id']})"}), 400)
+        return res
+    for user in users:
+        if str(user["id"]) == str(userid):
+            res = make_response(jsonify({"error": f"user {userid} already exists"}), 400)
+            return res
+    users.append(user_req)
+    update_db(users)
+    return make_response(jsonify({"message": f"user {userid} added"}), 200)
 
+@app.route("/users/<userid>", methods=['DELETE'])
+def delete_user(userid):
+    """
+        Delete a user given its id and all its bookings
+        param : a string userid
+    """
+    # Opens a new channel with the booking service to retrieve the bookings of the user
+    with grpc.insecure_channel('localhost:3001') as channel:
+        stub = booking_pb2_grpc.BookingStub(channel)
+        requested_userid = booking_pb2.UserId(userid=userid)
+        # Deletes all the bookings od the user
+        stub.deleteAllBooking(requested_userid)
+        channel.close()
+    for user in users:
+        if str(user["id"]) == str(userid):
+            users.remove(user)
+            update_db(users)
+            res = make_response(jsonify({"message": f"user {userid} deleted"}), 200)
+            return res
+    return make_response(jsonify({"error": f"user {userid} not found"}), 400)
 
 @app.route("/users/movies/<userid>", methods=['GET'])
 def get_movies_by_userid(userid):
@@ -188,6 +195,5 @@ def get_movies_by_userid(userid):
 
 if __name__ == "__main__":
     # tests for the booking service
-    run()
     print("Server running in port %s" % PORT)
     app.run(host=HOST, port=PORT)
