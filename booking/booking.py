@@ -5,6 +5,7 @@ import booking_pb2_grpc
 import showtime_pb2
 import showtime_pb2_grpc
 import json
+import requests
 
 
 class BookingServicer(booking_pb2_grpc.BookingServicer):
@@ -57,18 +58,18 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
         # New channel with the showtime service to verify the validity of the schedule
         with grpc.insecure_channel('localhost:3002') as channel:
             stub = showtime_pb2_grpc.ShowtimeStub(channel)
-            # We retrieve all registered schedules
-            all_schedules = get_all_schedules(stub)
-            # We go through all the registered schedules and verify if it matches with our schedule
-            for element in all_schedules:
-                if element.date == new_movie_date:
-                    for movie in element.movies:
-                        if movie == new_movieid:
-                            print("The requested schedule is valid")
-                            # We close the channel
-                            channel.close()
-                            return booking_pb2.Validity(validity=True)
-            print("The requested schedule is not valid according to the showtime database")
+            date = showtime_pb2.Date(date = new_movie_date)
+            check_date_existence = stub.GetScheduleByDate(date)
+            if check_date_existence.date == "":
+                print("The requested schedule is not valid according to the showtime service")
+                channel.close()
+                return booking_pb2.Validity(validity=False)
+            available_movies = check_date_existence.movies
+            if new_movieid in available_movies:
+                print("The requested schedule is valid")
+                channel.close()
+                return booking_pb2.Validity(validity=True)
+            print("The requested schedule is not valid according to the showtime service")
             # We close the channel
             channel.close()
             return booking_pb2.Validity(validity=False)
@@ -77,8 +78,6 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
         """
         Add the requested schedule to the booking database.
         If the user is not found, we create a new user with the booking
-        TODO /!\ We assume the user already exists in the user database,
-         but no verification is done in the user service yet /!\
         :param request: {userid, movieSchedule}
         :param context:
         :return: {userid, movieSchedule}
@@ -88,8 +87,14 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
         movieSchedule = request.movieSchedule
         # We first check the validity of the schedule
         validity = self.checkBookingValidity(movieSchedule, context).validity
+        print("oui")
+        user_existence_response = requests.get(f'http://localhost:3203/users/{userid}')
+        print("user_existence_response", user_existence_response)
         if not validity:
             print("The schedule requested isn't available; please verify the schedule requested")
+            return request
+        if user_existence_response.status_code != 200:
+            print("error: user not found")
             return request
         # We go through all the bookings to match the userid, schedules date and schedules movieid
         # Depending on the match result, we have to either create a new user,
@@ -178,6 +183,25 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
         return request
 
 
+    def deleteAllBooking(self, request, context):
+        """
+        Delete all the bookings of the given user (id) from the bookings database
+        :param request: UserId
+        :param context:
+        :return: {userid, movieSchedule}
+        """
+        # We extract the request data
+        userid = request.userid
+        for user_bookings in self.db:
+            if user_bookings["userid"] == userid:
+                self.db.remove(user_bookings)
+                self.updateDB(self.db)
+                print("bookings found and deleted")
+                return request
+        print("No booking found")
+        return request
+
+
 def get_schedule_by_date(stub, date):
     """
     Retrieved schedule thanks to date
@@ -213,34 +237,8 @@ def serve():
     server.wait_for_termination()
 
 
-def test_showtime():
-    """
-    Tests for the showtime service
-    :return:
-    """
-    # We open a channel connected to the showtime service
-    with grpc.insecure_channel('localhost:3002') as channel:
-        stub = showtime_pb2_grpc.ShowtimeStub(channel)
 
-        print("-------------- GetAllSchedules --------------")
-        all_schedules = get_all_schedules(stub)
-        for schedule in all_schedules:
-            print(schedule)
-
-        print("-------------- GetScheduleByDate --------------")
-
-        print("       -- A booking should be found --")
-        date = showtime_pb2.Date(date="20151130")
-        get_schedule_by_date(stub, date)
-
-        print("       -- No booking should be found --")
-        date = showtime_pb2.Date(date="Unknown date")
-        get_schedule_by_date(stub, date)
-
-        #channel closed
-        channel.close()
 
 
 if __name__ == '__main__':
-    test_showtime()
     serve()

@@ -5,6 +5,7 @@ service Booking {
     rpc checkBookingValidity(MovieSchedule) returns (Validity) {}
     rpc addBooking(MovieScheduleWithUserId) returns (MovieScheduleWithUserId) {}
     rpc deleteBooking(MovieScheduleWithUserId) returns (MovieScheduleWithUserId) {}
+    rpc deleteAllBooking(UserId) returns (UserId) {}
 }
 
 message UserId {
