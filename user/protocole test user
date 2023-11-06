@@ -1,0 +1,70 @@
+----------- get_json
+
+GET:
+http://localhost:3203/users
+Retourne l'ensemble des utilisateurs de la db
+
+----------- get_user_by_id
+GET:
+
+http://localhost:3203/users/chris_rivers
+Retourne le user chris rivers
+
+http://localhost:3203/users/obiwan_kenobi
+Bad input parameter (le user n'existe pas)
+
+----------- add_user
+POST:
+
+http://localhost:3203/users/chris_rivers
+{
+    "id": "chris_rivers",
+    "last_active": 0,
+    "name": ""
+}
+User déjà existant
+
+http://localhost:3203/users/chris_rivers
+{
+    "id": "chris",
+    "last_active": 0,
+    "name": ""
+}
+Les ids ne correspondent pas
+
+http://localhost:3203/users/obiwan_kenobi
+{
+    "id": "obiwan_kenobi",
+    "last_active": 0,
+    "name": ""
+}
+User added
+Si on execute la requête une deuxième fois, user existant
+
+----------- delete_user
+DELETE:
+
+http://localhost:3203/users/obiwan_kenobi
+Si la section "add_user" a été exécuté, user deleted
+Sinon, non existent user
+
+http://localhost:3203/users/chris_rivers
+User deleted, +les booking de chris_rivers deleted
+
+----------- get_bookings_by_userid
+GET:
+
+http://localhost:3203/users/bookings/garret_heaton
+Retourne les bookings de garret_heaton (il devrait il y en avoir 2)
+
+http://localhost:3203/users/bookings/obiwan_kenobi
+Retourne une liste vide (ou erreur pour le tp rest)
+
+----------- get_movies_by_userid
+GET:
+
+http://localhost:3203/users/movies/garret_heaton
+Deux films devraient être trouvés: Creed et The Danish Girl
+
+http://localhost:3203/users/movies/obiwan_kenobi
+Liste movies vide (ou erreur pour le tp rest)
