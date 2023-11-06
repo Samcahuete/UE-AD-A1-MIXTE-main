@@ -99,15 +99,19 @@ def add_user(userid):
         Add a user to the database if it doesn't already exist
         param : a string userid
     """
+    # retrieves the user data
     user_req = request.get_json()
-    if user_req["id"] != userid:
+    # verifies if the request is coherent
+    if user_req["id"]   != userid:
         res = make_response(jsonify({"error": f"the userid specified in the url ({userid}) "
                                               f"doesn't match with the one given in the body ({user_req['id']})"}), 400)
         return res
+    # verifies if the user already exists
     for user in users:
-        if str(user["id"]) == str(userid):
+        if user["id"] == userid:
             res = make_response(jsonify({"error": f"user {userid} already exists"}), 400)
             return res
+    # updates the database
     users.append(user_req)
     update_db(users)
     return make_response(jsonify({"message": f"user {userid} added"}), 200)
@@ -122,16 +126,44 @@ def delete_user(userid):
     with grpc.insecure_channel('localhost:3001') as channel:
         stub = booking_pb2_grpc.BookingStub(channel)
         requested_userid = booking_pb2.UserId(userid=userid)
-        # Deletes all the bookings od the user
+        # Deletes all the bookings of the user
         stub.deleteAllBooking(requested_userid)
         channel.close()
+    # goes through all the users to find the requested user
     for user in users:
-        if str(user["id"]) == str(userid):
+        if user["id"] == userid:
+            # removes the user and updates the database
             users.remove(user)
             update_db(users)
             res = make_response(jsonify({"message": f"user {userid} deleted"}), 200)
             return res
-    return make_response(jsonify({"error": f"user {userid} not found"}), 400)
+    # user non exist
+    return make_response(jsonify({"error": f"non existent user {userid}"}), 400)
+
+
+@app.route("/users/bookings/<userid>", methods=['GET'])
+def get_bookings_by_userid(userid):
+    """
+        Returns the bookings of a user from the booking database knowing the userid
+        param : a string userid
+        return : the bookings requested in json format
+    """
+    bookings = []
+    with grpc.insecure_channel('localhost:3001') as channel:
+        stub = booking_pb2_grpc.BookingStub(channel)
+        requested_userid = booking_pb2.UserId(userid=userid)
+        # Gets the bookings of the user
+        bookings_stream = stub.GetBookingsByUserId(requested_userid)
+        # the response is a stream, as well as its movies
+        for user_bookings in bookings_stream:
+            bookings.append({
+            "date": user_bookings.date,
+            "movies": [movie for movie in user_bookings.movies]
+        })
+        channel.close()
+    res = make_response(jsonify(bookings), 200)
+    return res
+
 
 @app.route("/users/movies/<userid>", methods=['GET'])
 def get_movies_by_userid(userid):
@@ -145,7 +177,7 @@ def get_movies_by_userid(userid):
         stub = booking_pb2_grpc.BookingStub(channel)
         requested_userid = booking_pb2.UserId(userid=userid)
         # We request the booking service and retrieve a stream of data
-        user_bookings_stream = get_bookings_by_userid(stub, requested_userid)
+        user_bookings_stream = stub.GetBookingsByUserId(requested_userid)
         # We collect the data of the stream
         user_bookings = []
         for booking in user_bookings_stream:
@@ -161,7 +193,7 @@ def get_movies_by_userid(userid):
         # We go through all the movies of all the bookings of the user
         for booking in user_bookings:
             for movieid in booking.movies:
-                # We create the graphql query
+                # Creates the graphql query
                 query_content = """
 {
   movie_with_id(_id: %s) {

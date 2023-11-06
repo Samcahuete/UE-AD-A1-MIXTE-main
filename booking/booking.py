@@ -41,9 +41,7 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
                 # Yields all the registered schedules
                 for date in booking["dates"]:
                     yield booking_pb2.BookingData(date=date["date"], movies=date["movies"])
-        print("user booking not found")
-        # We yield nothing in the stream of data
-        yield None
+        print("end of stream")
 
     def checkBookingValidity(self, request, context):
         """
@@ -58,17 +56,21 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
         # New channel with the showtime service to verify the validity of the schedule
         with grpc.insecure_channel('localhost:3002') as channel:
             stub = showtime_pb2_grpc.ShowtimeStub(channel)
+            # Asks showtime to get the schedule associated with the requested date
             date = showtime_pb2.Date(date = new_movie_date)
             check_date_existence = stub.GetScheduleByDate(date)
+            # the schedule doesn't exist, returns false
             if check_date_existence.date == "":
                 print("The requested schedule is not valid according to the showtime service")
                 channel.close()
                 return booking_pb2.Validity(validity=False)
             available_movies = check_date_existence.movies
+            # verifies if the requested movie is available at this date
             if new_movieid in available_movies:
                 print("The requested schedule is valid")
                 channel.close()
                 return booking_pb2.Validity(validity=True)
+            print(booking_pb2.Validity(validity=False))
             print("The requested schedule is not valid according to the showtime service")
             # We close the channel
             channel.close()
@@ -87,9 +89,7 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
         movieSchedule = request.movieSchedule
         # We first check the validity of the schedule
         validity = self.checkBookingValidity(movieSchedule, context).validity
-        print("oui")
         user_existence_response = requests.get(f'http://localhost:3203/users/{userid}')
-        print("user_existence_response", user_existence_response)
         if not validity:
             print("The schedule requested isn't available; please verify the schedule requested")
             return request
@@ -190,14 +190,17 @@ class BookingServicer(booking_pb2_grpc.BookingServicer):
         :param context:
         :return: {userid, movieSchedule}
         """
-        # We extract the request data
+        # We extract the requested userid
         userid = request.userid
         for user_bookings in self.db:
+            # finds the booking of the user
             if user_bookings["userid"] == userid:
+                # delete the booking and update the database
                 self.db.remove(user_bookings)
                 self.updateDB(self.db)
                 print("bookings found and deleted")
                 return request
+        # No booking found
         print("No booking found")
         return request
 
